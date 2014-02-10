@@ -7,6 +7,8 @@
 //
 
 #import "AppDelegate.h"
+#import "HomeViewController.h"
+#import "PersonalCenterViewController.h"
 
 @implementation AppDelegate
 
@@ -18,6 +20,15 @@
 {
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     // Override point for customization after application launch.
+    
+    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent];
+    
+//    HomeViewController *homeVC = [[HomeViewController alloc] init];
+//    self.window.rootViewController = [[UINavigationController alloc] initWithRootViewController:homeVC];
+
+    PersonalCenterViewController *pcVC = [[PersonalCenterViewController alloc] init];
+    self.window.rootViewController = pcVC;
+    
     self.window.backgroundColor = [UIColor whiteColor];
     [self.window makeKeyAndVisible];
     return YES;
