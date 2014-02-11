@@ -90,6 +90,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		6B18492518AA065300E5832A /* DLog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DLog.h; sourceTree = "<group>"; };
 		6B2192B018A8AAE1005478ED /* AFHTTPRequestOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AFHTTPRequestOperation.h; sourceTree = "<group>"; };
 		6B2192B118A8AAE1005478ED /* AFHTTPRequestOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AFHTTPRequestOperation.m; sourceTree = "<group>"; };
 		6B2192B218A8AAE1005478ED /* AFHTTPRequestOperationManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AFHTTPRequestOperationManager.h; sourceTree = "<group>"; };
@@ -325,6 +326,7 @@
 			children = (
 				6B21931718A8AE72005478ED /* SMHPO_HTTP_Pool.h */,
 				6B21931818A8AE72005478ED /* SMHPO_HTTP_Pool.m */,
+				6B18492518AA065300E5832A /* DLog.h */,
 			);
 			path = SMHPOHTTPPOOL;
 			sourceTree = "<group>";
