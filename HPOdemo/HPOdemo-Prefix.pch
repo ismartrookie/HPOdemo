@@ -16,6 +16,7 @@
     #import <CoreData/CoreData.h>
     #import "SMHPO_HTTP_Pool.h"
     #import "SVProgressHUD.h"
+    #import "DLog.h"
 #endif
 
 #define HPO_GREEN [UIColor colorWithRed:24 / 255.0f green:185 / 255.0f blue:123 / 255.0f alpha:1.0f]

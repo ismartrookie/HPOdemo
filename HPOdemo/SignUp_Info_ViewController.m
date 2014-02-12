@@ -134,7 +134,27 @@
 
 - (void)submit:(UIButton *)sender
 {
+    self.name = nameTextField.text;
+    self.idCard = idTextField.text;
     
+    [SVProgressHUD showWithMaskType:SVProgressHUDMaskTypeClear];
+    [SMHPO_HTTP_Pool SMHPO_signup_Name:self.name withPassword:self.password withPhone:self.phoneNum withVerify_code:self.hashed_code withSuccess:^(id resp) {
+        NSLog(@"resp = %@",resp);
+        
+        int result = [[resp objectForKey:@"result"] intValue];
+        NSString *message = [resp objectForKey:@"message"];
+        /**
+         *  注册成功
+         */
+        if (result == 1) {
+            [SVProgressHUD dismissWithSuccess:message];
+        } else {
+            [SVProgressHUD dismissWithError:message];
+        }
+    } withFailure:^(id error) {
+        NSLog(@"error = %@",error);
+        [SVProgressHUD dismissWithError:[error description]];
+    }];
 }
 
 - (void)didReceiveMemoryWarning

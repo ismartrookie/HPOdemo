@@ -13,6 +13,7 @@
 {
     UITextField *verifyTextField;
     UITextField *passwordTextField;
+    UIButton    *resendButton;
 }
 
 @property (strong, nonatomic) UILabel *telLabel;
@@ -95,7 +96,7 @@
     [passwordTextField setPlaceholder:@"设置登录用密码"];
     [textBGView addSubview:passwordTextField];
     
-    UIButton *resendButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    resendButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [resendButton setFrame:CGRectMake(237, 8, 74, 28)];
     [resendButton setBackgroundColor:[UIColor whiteColor]];
     [resendButton setTitle:@"重新发送" forState:UIControlStateNormal];
@@ -108,16 +109,72 @@
     [resendButton addTarget:self action:@selector(resend) forControlEvents:UIControlEventTouchUpInside];
     [textBGView addSubview:resendButton];
 }
-
 - (void)resend
 {
-    
+    [SVProgressHUD show];
+    [SMHPO_HTTP_Pool SMHPO_verify_code_PhoneNum:self.phoneNum withSuccess:^(id resp) {
+        int result = [[resp objectForKey:@"result"] intValue];
+        //请求成功
+        if (result == 1) {
+            [self setHashed_code:[NSString stringWithFormat:@"%@",[resp objectForKey:@"hashed_code"]]];
+            [SVProgressHUD dismiss];
+            //异常标记
+        } else {
+            [SVProgressHUD dismissWithError:[resp objectForKey:@"message"] afterDelay:1];
+        }
+    } withFailure:^(id error) {
+        [SVProgressHUD dismissWithError:error afterDelay:2];
+    }];
 }
 
 - (void)next
 {
+    self.password = passwordTextField.text;
     SignUp_Info_ViewController *suiVC = [[SignUp_Info_ViewController alloc] init];
     [self.navigationController pushViewController:suiVC animated:YES];
+
+    suiVC.hashed_code = self.hashed_code;
+    suiVC.phoneNum = self.phoneNum;
+    suiVC.password = self.password;
+}
+
+- (void)setHashed_code:(NSString *)hashed_code
+{
+    if (![_hashed_code isEqualToString:hashed_code]) {
+        [self testSecond];
+    }
+    _hashed_code = hashed_code;
+}
+
+- (void)testSecond
+{
+    __block int timeout=300; //倒计时时间
+    dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+    dispatch_source_t _timer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0,queue);
+    dispatch_source_set_timer(_timer,dispatch_walltime(NULL, 0),1.0*NSEC_PER_SEC, 0); //每秒执行
+    dispatch_source_set_event_handler(_timer, ^{
+        if(timeout<=0){ //倒计时结束，关闭
+            dispatch_source_cancel(_timer);
+        }else{
+            int minutes = timeout / 60;
+            int seconds = timeout % 60;
+            NSString *strTime = [NSString stringWithFormat:@"%d分%.2d秒",minutes, seconds];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                //设置界面的按钮显示 根据自己需求设置
+                [resendButton setTitle:strTime forState:UIControlStateNormal];
+                [resendButton setEnabled:NO];
+            });
+            timeout--;
+        }  
+    });
+    dispatch_source_set_cancel_handler(_timer, ^{
+        dispatch_async(dispatch_get_main_queue(), ^{
+            //设置界面的按钮显示 根据自己需求设置
+            [resendButton setTitle:@"重新发送" forState:UIControlStateNormal];
+            [resendButton setEnabled:YES];
+        });
+    });
+    dispatch_resume(_timer);
 }
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event

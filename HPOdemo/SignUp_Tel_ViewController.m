@@ -80,10 +80,8 @@
             NSLog(@"resp = %@",resp);
             SignUp_Verify_ViewController *suvVC = [[SignUp_Verify_ViewController alloc] init];
             [self.navigationController pushViewController:suvVC animated:YES];
-            
-            [suvVC setPhoneNum:[resp objectForKey:@""]];
+            [suvVC setPhoneNum:@"18612259290"];
             [suvVC setHashed_code:[NSString stringWithFormat:@"%@",[resp objectForKey:@"hashed_code"]]];
-            
             [SVProgressHUD dismiss];
         //异常标记
         } else {

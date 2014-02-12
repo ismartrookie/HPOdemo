@@ -12,5 +12,6 @@
 
 @property (copy, nonatomic) NSString *phoneNum;
 @property (copy, nonatomic) NSString *hashed_code;
+@property (copy, nonatomic) NSString *password;
 
 @end
