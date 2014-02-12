@@ -41,6 +41,7 @@
 		6B21931418A8AAE1005478ED /* SVProgressHUD.m in Sources */ = {isa = PBXBuildFile; fileRef = 6B2192F418A8AAE1005478ED /* SVProgressHUD.m */; };
 		6B21931918A8AE72005478ED /* SMHPO_HTTP_Pool.m in Sources */ = {isa = PBXBuildFile; fileRef = 6B21931818A8AE72005478ED /* SMHPO_HTTP_Pool.m */; };
 		6B21931A18A8B1C3005478ED /* SMHPO_HTTP_Pool.m in Sources */ = {isa = PBXBuildFile; fileRef = 6B21931818A8AE72005478ED /* SMHPO_HTTP_Pool.m */; };
+		6BF9271318AB4ECF00D54C8F /* Reservation_Information_ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6BF9271218AB4ECF00D54C8F /* Reservation_Information_ViewController.m */; };
 		D00B38D51892073A00930986 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D00B38D41892073A00930986 /* Foundation.framework */; };
 		D00B38D71892073A00930986 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D00B38D61892073A00930986 /* CoreGraphics.framework */; };
 		D00B38D91892073A00930986 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D00B38D81892073A00930986 /* UIKit.framework */; };
@@ -159,6 +160,8 @@
 		6B2192F418A8AAE1005478ED /* SVProgressHUD.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SVProgressHUD.m; sourceTree = "<group>"; };
 		6B21931718A8AE72005478ED /* SMHPO_HTTP_Pool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SMHPO_HTTP_Pool.h; sourceTree = "<group>"; };
 		6B21931818A8AE72005478ED /* SMHPO_HTTP_Pool.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SMHPO_HTTP_Pool.m; sourceTree = "<group>"; };
+		6BF9271118AB4ECF00D54C8F /* Reservation_Information_ViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Reservation_Information_ViewController.h; sourceTree = "<group>"; };
+		6BF9271218AB4ECF00D54C8F /* Reservation_Information_ViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Reservation_Information_ViewController.m; sourceTree = "<group>"; };
 		D00B38D11892073A00930986 /* HPOdemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HPOdemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D00B38D41892073A00930986 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		D00B38D61892073A00930986 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -369,6 +372,8 @@
 		D00B38DC1892073A00930986 /* HPOdemo */ = {
 			isa = PBXGroup;
 			children = (
+				6BF9271118AB4ECF00D54C8F /* Reservation_Information_ViewController.h */,
+				6BF9271218AB4ECF00D54C8F /* Reservation_Information_ViewController.m */,
 				D00B38E51892073A00930986 /* AppDelegate.h */,
 				D00B38E61892073A00930986 /* AppDelegate.m */,
 				D0BDA4DB18A5F811003C7AD6 /* HPONavigationViewController.h */,
@@ -561,6 +566,7 @@
 				6B21931018A8AAE1005478ED /* UIImage+MultiFormat.m in Sources */,
 				6B21930418A8AAE1005478ED /* UIWebView+AFNetworking.m in Sources */,
 				6B21930218A8AAE1005478ED /* UIImageView+AFNetworking.m in Sources */,
+				6BF9271318AB4ECF00D54C8F /* Reservation_Information_ViewController.m in Sources */,
 				6B21930E18A8AAE1005478ED /* UIButton+WebCache.m in Sources */,
 				6B21931418A8AAE1005478ED /* SVProgressHUD.m in Sources */,
 				6B21930F18A8AAE1005478ED /* UIImage+GIF.m in Sources */,
