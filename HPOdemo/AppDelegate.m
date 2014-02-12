@@ -9,6 +9,7 @@
 #import "AppDelegate.h"
 #import "HomeViewController.h"
 #import "PersonalCenterViewController.h"
+#import "Reservation_Information_ViewController.h"
 
 @implementation AppDelegate
 
@@ -26,8 +27,11 @@
 //    HomeViewController *homeVC = [[HomeViewController alloc] init];
 //    self.window.rootViewController = [[UINavigationController alloc] initWithRootViewController:homeVC];
 
-    PersonalCenterViewController *pcVC = [[PersonalCenterViewController alloc] init];
-    self.window.rootViewController = pcVC;
+//    PersonalCenterViewController *pcVC = [[PersonalCenterViewController alloc] init];
+//    self.window.rootViewController = pcVC;
+    
+    Reservation_Information_ViewController *resVC = [[Reservation_Information_ViewController alloc] init];
+    [self.window setRootViewController:resVC];
     
     self.window.backgroundColor = [UIColor whiteColor];
     [self.window makeKeyAndVisible];

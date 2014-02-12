@@ -72,15 +72,17 @@
 
 - (void)next
 {
+    NSString *phone = telTextField.text;
+    [telTextField resignFirstResponder];
     [SVProgressHUD show];
-    [SMHPO_HTTP_Pool SMHPO_verify_code_PhoneNum:@"18612259290" withSuccess:^(id resp) {
+    [SMHPO_HTTP_Pool SMHPO_verify_code_PhoneNum:phone withSuccess:^(id resp) {
         int result = [[resp objectForKey:@"result"] intValue];
         //请求成功
         if (result == 1) {
             NSLog(@"resp = %@",resp);
             SignUp_Verify_ViewController *suvVC = [[SignUp_Verify_ViewController alloc] init];
             [self.navigationController pushViewController:suvVC animated:YES];
-            [suvVC setPhoneNum:@"18612259290"];
+            [suvVC setPhoneNum:phone];
             [suvVC setHashed_code:[NSString stringWithFormat:@"%@",[resp objectForKey:@"hashed_code"]]];
             [SVProgressHUD dismiss];
         //异常标记

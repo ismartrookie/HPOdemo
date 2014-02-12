@@ -140,7 +140,6 @@
     [SVProgressHUD showWithMaskType:SVProgressHUDMaskTypeClear];
     [SMHPO_HTTP_Pool SMHPO_signup_Name:self.name withPassword:self.password withPhone:self.phoneNum withVerify_code:self.hashed_code withSuccess:^(id resp) {
         NSLog(@"resp = %@",resp);
-        
         int result = [[resp objectForKey:@"result"] intValue];
         NSString *message = [resp objectForKey:@"message"];
         /**

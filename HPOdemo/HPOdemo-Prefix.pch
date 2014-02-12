@@ -21,3 +21,4 @@
 
 #define HPO_GREEN [UIColor colorWithRed:24 / 255.0f green:185 / 255.0f blue:123 / 255.0f alpha:1.0f]
 #define HPO_LINEN [UIColor colorWithRed:247 / 255.0f green:245 / 255.0f blue:239 / 255.0f alpha:1.0f]
+#define HPO_BROWN [UIColor colorWithRed:211 / 255.0f green:205 / 255.0f blue:185 / 255.0f alpha:1.0f]
