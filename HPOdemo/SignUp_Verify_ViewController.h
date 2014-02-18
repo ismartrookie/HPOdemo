@@ -10,8 +10,6 @@
 
 @interface SignUp_Verify_ViewController : HPONavigationViewController
 
-@property (copy, nonatomic) NSString *phoneNum;
-@property (copy, nonatomic) NSString *hashed_code;
-@property (copy, nonatomic) NSString *password;
+@property (copy, nonatomic) NSString *phoneNumber;
 
 @end

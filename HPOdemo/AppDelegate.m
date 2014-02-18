@@ -8,8 +8,16 @@
 
 #import "AppDelegate.h"
 #import "HomeViewController.h"
+#import "SignUp_Tel_ViewController.h"
+#import "SignUp_Verify_ViewController.h"
+#import "SignUp_Info_ViewController.h"
 #import "PersonalCenterViewController.h"
+#import "Reservation_Calendar_ViewController.h"
+#import "Reservation_Option_ViewController.h"
 #import "Reservation_Information_ViewController.h"
+#import "AddPatientViewController.h"
+#import "Reservation_CheckInfo_ViewController.h"
+#import "User_Account_ViewController.h"
 
 @implementation AppDelegate
 
@@ -23,15 +31,30 @@
     // Override point for customization after application launch.
     
     [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent];
-    
-//    HomeViewController *homeVC = [[HomeViewController alloc] init];
-//    self.window.rootViewController = [[UINavigationController alloc] initWithRootViewController:homeVC];
 
-    PersonalCenterViewController *pcVC = [[PersonalCenterViewController alloc] init];
-    self.window.rootViewController = pcVC;
+//    PersonalCenterViewController *pcVC = [[PersonalCenterViewController alloc] init];
+//    self.window.rootViewController = [[UINavigationController alloc] initWithRootViewController:pcVC];
     
-//    Reservation_Information_ViewController *resVC = [[Reservation_Information_ViewController alloc] init];
-//    [self.window setRootViewController:resVC];
+    Reservation_Calendar_ViewController *rcVC = [[Reservation_Calendar_ViewController alloc] init];
+    self.window.rootViewController = [[UINavigationController alloc] initWithRootViewController:rcVC];
+    
+//    Reservation_Option_ViewController *roVC = [[Reservation_Option_ViewController alloc] init];
+//    self.window.rootViewController = [[UINavigationController alloc] initWithRootViewController:roVC];
+
+//    Reservation_Information_ViewController *riVC = [[Reservation_Information_ViewController alloc] init];
+//    self.window.rootViewController = [[UINavigationController alloc] initWithRootViewController:riVC];
+
+//    AddPatientViewController *apVC = [[AddPatientViewController alloc] init];
+//    self.window.rootViewController = [[UINavigationController alloc] initWithRootViewController:apVC];
+    
+//    SignUp_Verify_ViewController *suvVC = [[SignUp_Verify_ViewController alloc] init];
+//    self.window.rootViewController = [[UINavigationController alloc] initWithRootViewController:suvVC];
+    
+//    NSString *className = @"Reservation_Calendar_ViewController.h";
+//    Class class = NSClassFromString(className);
+//    id customVC = [[class alloc] init];
+//
+//    self.window.rootViewController = [[UINavigationController alloc] initWithRootViewController:customVC];
     
     self.window.backgroundColor = [UIColor whiteColor];
     [self.window makeKeyAndVisible];

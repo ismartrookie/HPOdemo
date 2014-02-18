@@ -7,7 +7,10 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "VPImageCropperViewController.h"
+#import <AssetsLibrary/AssetsLibrary.h>
+#import <MobileCoreServices/MobileCoreServices.h>
 
-@interface PersonalCenterViewController : UIViewController<UICollectionViewDelegate, UICollectionViewDataSource>
+@interface PersonalCenterViewController : UIViewController<UICollectionViewDelegate, UICollectionViewDataSource, UINavigationControllerDelegate, UIImagePickerControllerDelegate, UIActionSheetDelegate, VPImageCropperDelegate>
 
 @end

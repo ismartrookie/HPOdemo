@@ -7,6 +7,10 @@
 //
 
 #import "SignIn_Tel_ViewController.h"
+#import "SVProgressHUD.h"
+#import "AFNetworking.h"
+#import "FormatCheck.h"
+#import "UserInfo.h"
 
 @interface SignIn_Tel_ViewController ()
 {
@@ -39,6 +43,7 @@
     [signInButton setBackgroundColor:[UIColor clearColor]];
     [signInButton setTitle:@"登录" forState:UIControlStateNormal];
     [signInButton.titleLabel setFont:[UIFont boldSystemFontOfSize:13.0f]];
+    [signInButton addTarget:self action:@selector(signIn) forControlEvents:UIControlEventTouchUpInside];
     [signInButton.layer setCornerRadius:3.0f];
     [signInButton.layer setMasksToBounds:YES];
     [signInButton.layer setBorderWidth:1.0f];
@@ -75,6 +80,7 @@
     passwordTextField = [[UITextField alloc] initWithFrame:CGRectMake(55, 56, 250, 22)];
     [passwordTextField setTextColor:[UIColor darkGrayColor]];
     [passwordTextField setPlaceholder:@"登录密码"];
+    [passwordTextField setSecureTextEntry:YES];
     [textBGView addSubview:passwordTextField];
     
     UIButton *lostButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -88,7 +94,137 @@
 
 - (void)signIn
 {
-    [self dismissViewControllerAnimated:YES completion:NULL];
+    BOOL isMobileNumber = [FormatCheck isMobileNumber:telTextField.text];
+    BOOL isPasswordEmpty = [passwordTextField.text isEqualToString:@""];
+    
+    if (isMobileNumber && !isPasswordEmpty) {
+        if ([telTextField isFirstResponder] || [passwordTextField isFirstResponder]) {
+            [telTextField resignFirstResponder];
+            [passwordTextField resignFirstResponder];
+        }
+        
+        [self requestSignIn];
+    } else if (!isMobileNumber) {
+        [SVProgressHUD showErrorWithStatus:@"请检查手机号码是否正确" duration:1.5f];
+    } else if (isPasswordEmpty) {
+        [SVProgressHUD showErrorWithStatus:@"请输入密码" duration:1.5f];
+    }
+}
+
+- (void)requestSignIn
+{
+    [SVProgressHUD show];
+    
+    NSMutableURLRequest *urlRequest = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"http://115.28.3.92:8000/login?mobilephone=%@&password=%@", telTextField.text, passwordTextField.text]]];
+    
+    [urlRequest addValue:@"XMLHttpRequest" forHTTPHeaderField:@"X-Requested-With"];
+    [urlRequest setTimeoutInterval:10.0f];
+    
+    AFHTTPRequestOperation *httpRequest = [[AFHTTPRequestOperation alloc] initWithRequest:urlRequest];
+    
+    [httpRequest setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
+        [SVProgressHUD dismiss];
+        
+        NSDictionary *responseDic = [NSJSONSerialization JSONObjectWithData:responseObject
+                                                                    options:NSJSONReadingAllowFragments
+                                                                      error:nil];
+        
+        int result = [[responseDic objectForKey:@"result"] intValue];
+        
+        NSString *sessionId = [self analysisSessionId:[[operation.response allHeaderFields] objectForKey:@"Set-Cookie"]];
+        
+        NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+        [userDefaults setObject:sessionId forKey:@"cookie"];
+        [userDefaults synchronize];
+        
+        if (result == 1) {
+            [self requestUserInfo];
+        } else {
+           [SVProgressHUD showErrorWithStatus:[responseDic objectForKey:@"message"] duration:1.5f];
+        }
+    }
+                                       failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                                           [SVProgressHUD dismissWithError:@"网络异常" afterDelay:2];
+                                       }];
+    
+    [httpRequest start];
+}
+
+- (void)requestUserInfo
+{
+    [SVProgressHUD show];
+    
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    NSString *sessionId = [userDefaults objectForKey:@"cookie"];
+    
+    NSMutableURLRequest *urlRequest = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"http://115.28.3.92:8000/userinfo"]];
+    
+    [urlRequest addValue:@"XMLHttpRequest" forHTTPHeaderField:@"X-Requested-With"];
+    [urlRequest addValue:sessionId forHTTPHeaderField:@"Cookie"];
+    [urlRequest setTimeoutInterval:10.0f];
+    
+    AFHTTPRequestOperation *httpRequest = [[AFHTTPRequestOperation alloc] initWithRequest:urlRequest];
+    
+    [httpRequest setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
+        [SVProgressHUD dismiss];
+        
+        NSDictionary *responseDic = [NSJSONSerialization JSONObjectWithData:responseObject
+                                                                    options:NSJSONReadingAllowFragments
+                                                                      error:nil];
+        
+        int result = [[responseDic objectForKey:@"result"] intValue];
+        
+        if (result == 1) {
+            [self saveUserInfo:[responseDic objectForKey:@"user_info"]];
+            
+            [self dismissViewControllerAnimated:YES completion:NULL];
+        } else {
+            [SVProgressHUD showErrorWithStatus:[responseDic objectForKey:@"message"] duration:1.5f];
+        }
+    }
+                                       failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                                           [SVProgressHUD dismissWithError:@"网络异常" afterDelay:2];
+                                       }];
+    
+    [httpRequest start];
+}
+
+- (void)saveUserInfo:(NSDictionary *)userInfoDic
+{
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    UserInfo *userInfo = [NSKeyedUnarchiver unarchiveObjectWithData:[userDefaults objectForKey:@"userInfo"]];
+    
+    if (userInfo == nil) {
+        userInfo = [[UserInfo alloc] init];
+    }
+    
+    [userInfo setMobilephone:telTextField.text];
+    [userInfo setPassword:passwordTextField.text];
+    [userInfo setReal_name:     [userInfoDic objectForKey:@"real_name"]];
+    [userInfo setId_number:     [userInfoDic objectForKey:@"id_number"]];
+    [userInfo setGender:        [userInfoDic objectForKey:@"gender"]];
+    [userInfo setBirthday:      [userInfoDic objectForKey:@"birthday"]];
+    [userInfo setAddress:       [userInfoDic objectForKey:@"address"]];
+    [userInfo setAge:           [userInfoDic objectForKey:@"age"]];
+    [userInfo setAvatar:        [userInfoDic objectForKey:@"avatar"]];
+    [userInfo setEducation:     [userInfoDic objectForKey:@"education"]];
+    [userInfo setMarital_status:[userInfoDic objectForKey:@"marital_status"]];
+    [userInfo setJob:           [userInfoDic objectForKey:@"job"]];
+    [userInfo setNation:        [userInfoDic objectForKey:@"nation"]];
+    [userInfo setNationality:   [userInfoDic objectForKey:@"nationality"]];
+    [userInfo setProvince:      [userInfoDic objectForKey:@"province"]];
+    
+    [userDefaults setObject:[NSKeyedArchiver archivedDataWithRootObject:userInfo] forKey:@"userInfo"];
+    [userDefaults synchronize];
+}
+
+- (NSString *)analysisSessionId:(NSString *)code
+{
+    int endIndex = [code rangeOfString:@";"].location;
+    
+    NSString *sessionId = [code substringToIndex:endIndex];
+    
+    return sessionId;
 }
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event

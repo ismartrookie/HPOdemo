@@ -10,11 +10,7 @@
 
 @interface SignUp_Info_ViewController : HPONavigationViewController
 
-@property (copy, nonatomic) NSString *phoneNum;
-@property (copy, nonatomic) NSString *hashed_code;
-@property (copy, nonatomic) NSString *name;
-@property (copy, nonatomic) NSString *idCard;
+@property (copy, nonatomic) NSString *phoneNumber;
 @property (copy, nonatomic) NSString *password;
-@property (assign, nonatomic) int     sex;
 
 @end

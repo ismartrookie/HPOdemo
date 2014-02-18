@@ -65,6 +65,8 @@
 
 - (void)signIn
 {
+    NSLog(@"login");
+    
     SignIn_Tel_ViewController *sitVC = [[SignIn_Tel_ViewController alloc] init];
     [self.navigationController pushViewController:sitVC animated:YES];
 }

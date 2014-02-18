@@ -8,6 +8,9 @@
 
 #import "SignUp_Tel_ViewController.h"
 #import "SignUp_Verify_ViewController.h"
+#import "FormatCheck.h"
+#import "SVProgressHUD.h"
+#import "AFNetworking.h"
 
 @interface SignUp_Tel_ViewController ()
 {
@@ -72,26 +75,73 @@
 
 - (void)next
 {
-    NSString *phone = telTextField.text;
-    [telTextField resignFirstResponder];
+    BOOL isMobileNo = [FormatCheck isMobileNumber:telTextField.text];
+    
+    if (isMobileNo) {
+        if ([telTextField isFirstResponder]) {
+            [telTextField resignFirstResponder];
+        }
+        
+        [self requestVerifyCode];
+    } else {
+        [SVProgressHUD showErrorWithStatus:@"请检查手机号码是否正确" duration:1.5f];
+    }
+}
+
+- (void)requestVerifyCode
+{
     [SVProgressHUD show];
-    [SMHPO_HTTP_Pool SMHPO_verify_code_PhoneNum:phone withSuccess:^(id resp) {
-        int result = [[resp objectForKey:@"result"] intValue];
-        //请求成功
+    
+    NSMutableURLRequest *urlRequest = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"http://115.28.3.92:8000/verify_code?phone=%@",telTextField.text]]];
+    [urlRequest addValue:@"XMLHttpRequest" forHTTPHeaderField:@"X-Requested-With"];
+    [urlRequest setTimeoutInterval:10.0f];
+    
+    AFHTTPRequestOperation *httpRequest = [[AFHTTPRequestOperation alloc] initWithRequest:urlRequest];
+    
+    [httpRequest setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
+        [SVProgressHUD dismiss];
+        
+        NSDictionary *responseDic = [NSJSONSerialization JSONObjectWithData:responseObject
+                                                                    options:NSJSONReadingAllowFragments
+                                                                      error:nil];
+        
+        int result = [[responseDic objectForKey:@"result"] intValue];
+        
+        NSString *sessionId = [self analysisSessionId:[[operation.response allHeaderFields] objectForKey:@"Set-Cookie"]];
+        
+        NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+        [userDefaults setObject:sessionId forKey:@"cookie"];
+        [userDefaults synchronize];
+        
+        NSString *hashCode = [responseDic objectForKey:@"hashed_code"];
+        
+        NSLog(@"hashCode = %@", hashCode);
+        
         if (result == 1) {
-            NSLog(@"resp = %@",resp);
             SignUp_Verify_ViewController *suvVC = [[SignUp_Verify_ViewController alloc] init];
             [self.navigationController pushViewController:suvVC animated:YES];
-            [suvVC setPhoneNum:phone];
-            [suvVC setHashed_code:[NSString stringWithFormat:@"%@",[resp objectForKey:@"hashed_code"]]];
-            [SVProgressHUD dismiss];
-        //异常标记
+            
+            [suvVC setPhoneNumber:telTextField.text];
         } else {
-            [SVProgressHUD dismissWithError:[resp objectForKey:@"message"] afterDelay:1];
+            [SVProgressHUD showErrorWithStatus:[responseDic objectForKey:@"message"] duration:1.5f];
         }
-    } withFailure:^(id error) {
-        [SVProgressHUD dismissWithError:error afterDelay:2];
-    }];
+    }
+                                       failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                                           [SVProgressHUD dismissWithError:@"网络异常" afterDelay:2];
+                                       }];
+    
+    [httpRequest start];
+}
+
+- (NSString *)analysisSessionId:(NSString *)code
+{
+    int endIndex = [code rangeOfString:@";"].location;
+    
+    NSString *sessionId = [code substringToIndex:endIndex];
+    
+    NSLog(@"%@", sessionId);
+    
+    return sessionId;
 }
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
@@ -102,16 +152,6 @@
         [telTextField resignFirstResponder];
     }
 }
-
-//- (void)viewWillAppear:(BOOL)animated
-//{
-//    [self.navigationController setNavigationBarHidden:NO animated:YES];
-//}
-//
-//- (void)viewWillDisappear:(BOOL)animated
-//{
-//    [self.navigationController setNavigationBarHidden:YES animated:YES];
-//}
 
 - (void)didReceiveMemoryWarning
 {

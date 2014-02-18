@@ -7,10 +7,12 @@
 //
 
 #import "Reservation_Information_ViewController.h"
+#import "PatientSelectView.h"
 
 @interface Reservation_Information_ViewController ()
 {
     UIScrollView *bgScrollView;
+    UITapGestureRecognizer *tapGesture;
     UILabel *infoLabel;
     UILabel *nameLabel;
     UILabel *idCardNoLabel;
@@ -64,12 +66,8 @@
     UIView *nilView = [[UIView alloc] initWithFrame:CGRectZero];
     [self.view addSubview:nilView];
     
-    UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tap:)];
-    [tapGesture setNumberOfTapsRequired:1];
-    
     bgScrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 64, 320, self.view.bounds.size.height - 64)];
     [bgScrollView setContentSize:CGSizeMake(320, 550)];
-    [bgScrollView addGestureRecognizer:tapGesture];
     [self.view addSubview:bgScrollView];
     
     infoLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 12, 320, 15)];
@@ -93,6 +91,7 @@
     [demanderButton setTitleColor:[UIColor grayColor] forState:UIControlStateNormal];
     [demanderButton.titleLabel setFont:[UIFont systemFontOfSize:16.0f]];
     [demanderButton setTitleEdgeInsets:UIEdgeInsetsMake(0, -177, 0, 0)];
+    [demanderButton addTarget:self action:@selector(selectPatient) forControlEvents:UIControlEventTouchUpInside];
     [personInfoBGView addSubview:demanderButton];
     
     nameLabel = [[UILabel alloc] initWithFrame:CGRectMake(100, 0, 150, 44)];
@@ -255,6 +254,7 @@
     if (cell == nil) {
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:identifier];
         [cell.textLabel setFont:[UIFont systemFontOfSize:16.0f]];
+        [cell.textLabel setTextColor:[UIColor darkGrayColor]];
     }
     
     [cell.textLabel setText:[reasonArray objectAtIndex:indexPath.row]];
@@ -267,8 +267,6 @@
     UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
     
     [reasonLabel setText:cell.textLabel.text];
-    
-    NSLog(@"%@", cell.textLabel.text);
     
     [reasonInfoBGView setFrame:CGRectMake(reasonInfoBGView.frame.origin.x,
                                           reasonInfoBGView.frame.origin.y,
@@ -296,8 +294,20 @@
     isReasonPanelShow = NO;
 }
 
+- (void)selectPatient
+{
+    //  ....
+    PatientSelectView *psView = [[PatientSelectView alloc] initWithFrame:CGRectMake(0, 0, self.view.bounds.size.width, self.view.bounds.size.height)];
+    [self.view addSubview:psView];
+}
+
 - (void)selectReason
 {
+    if ([detailDiagnosisTextField isFirstResponder] || [noteTextField isFirstResponder]) {
+        [detailDiagnosisTextField resignFirstResponder];
+        [noteTextField resignFirstResponder];
+    }
+    
     if (isReasonPanelShow) {
         [reasonInfoBGView setFrame:CGRectMake(reasonInfoBGView.frame.origin.x,
                                               reasonInfoBGView.frame.origin.y,
@@ -359,13 +369,27 @@
         isDiagnosisPanelShow = YES;
     } else {
         if ([button isEqual:diagnosisYesButton]) {
-            [diagnosisYesButton setFrame:CGRectMake(0, 0, 288, 44)];
-            [diagnosisNoButton setFrame:CGRectMake(0, 44, 288, 44)];
+            [diagnosisYesButton setFrame:CGRectMake(diagnosisYesButton.frame.origin.x,
+                                                    0,
+                                                    diagnosisYesButton.frame.size.width,
+                                                    diagnosisYesButton.frame.size.height)];
+            
+            [diagnosisNoButton setFrame:CGRectMake(diagnosisNoButton.frame.origin.x,
+                                                   44,
+                                                   diagnosisNoButton.frame.size.width,
+                                                   diagnosisNoButton.frame.size.height)];
             
             isDiagnosisYes = YES;
         } else if ([button isEqual:diagnosisNoButton]) {
-            [diagnosisNoButton setFrame:CGRectMake(0, 0, 288, 44)];
-            [diagnosisYesButton setFrame:CGRectMake(0, 44, 288, 44)];
+            [diagnosisYesButton setFrame:CGRectMake(diagnosisYesButton.frame.origin.x,
+                                                    44,
+                                                    diagnosisYesButton.frame.size.width,
+                                                    diagnosisYesButton.frame.size.height)];
+            
+            [diagnosisNoButton setFrame:CGRectMake(diagnosisNoButton.frame.origin.x,
+                                                   0,
+                                                   diagnosisNoButton.frame.size.width,
+                                                   diagnosisNoButton.frame.size.height)];
             
             [diagnosisInfoBGView setFrame:CGRectMake(diagnosisInfoBGView.frame.origin.x,
                                                      diagnosisInfoBGView.frame.origin.y,
@@ -386,14 +410,25 @@
 
 - (BOOL)textFieldShouldBeginEditing:(UITextField *)textField
 {
+    //  删除多余的tap手势，保证bgScrollView只添加一个tap手势
+    NSArray *gestureArray = bgScrollView.gestureRecognizers;
+    for (UIGestureRecognizer *recognizer in gestureArray) {
+        if ([recognizer isEqual:tapGesture]) {
+            [bgScrollView removeGestureRecognizer:tapGesture];
+        }
+    }
+    
+    tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tap:)];
+    [tapGesture setNumberOfTapsRequired:1];
+    [bgScrollView addGestureRecognizer:tapGesture];
+    
     if ([textField isEqual:detailDiagnosisTextField]) {
         [bgScrollView setContentOffset:CGPointMake(0, 170) animated:YES];
     } else if ([textField isEqual:noteTextField]) {
         if (isReasonPanelShow) {
-            //  todo
-            
+            [bgScrollView setContentOffset:CGPointMake(0, 315 + 44 * reasonArray.count) animated:YES];
         } else {
-            [bgScrollView setContentOffset:CGPointMake(0, 300) animated:YES];
+            [bgScrollView setContentOffset:CGPointMake(0, 315) animated:YES];
         }
     }
     
@@ -402,10 +437,26 @@
 
 - (void)tap:(UITapGestureRecognizer *)recognizer
 {
-    if ([detailDiagnosisTextField isFirstResponder] || [noteTextField isFirstResponder]) {
+    if ([detailDiagnosisTextField isFirstResponder]) {
         [detailDiagnosisTextField resignFirstResponder];
+        
+        [bgScrollView setContentOffset:CGPointMake(0, bgScrollView.contentOffset.y - 170) animated:YES];
+    } else if ([noteTextField isFirstResponder]) {
         [noteTextField resignFirstResponder];
+        
+        if (isReasonPanelShow) {
+            [bgScrollView setContentOffset:CGPointMake(0, bgScrollView.contentOffset.y - 315 - 44 * reasonArray.count) animated:YES];
+        } else {
+            [bgScrollView setContentOffset:CGPointMake(0, bgScrollView.contentOffset.y - 315) animated:YES];
+        }
     }
+    
+    //  键盘隐藏后删除tap手势，避免与reasonTableView的点击手势冲突
+    [bgScrollView removeGestureRecognizer:tapGesture];
+    
+//        @"自从进入了xxx公司，我深刻的体会到了做产品和做项目的区别。做自己的产品,有归属感，就像自己的孩子一样，每天都想着怎么让他变的更好。上班想，下班想，早上起床会想，晚上睡前会想。每次看到好的设计能借鉴到自己的产品里都暗自窃喜，每次想到好的设计能完美融合到自己的产品里都欢欣鼓舞。手机里、Pad里装满了界面风格、配色方案、交互设计灰常NB的应用，每次安装新应用都要纠结好久来决定删掉哪个应用来腾出空间。备忘录里写满了设计的点子，我想把这些都记下来，用到自己的产品里。我希望我设计的应用装在每个人的手机里，即使不常用也不舍得删掉，当别人打开的时候，我可以骄傲的告诉他：“这是我设计的。”感谢这次工作机会让我看清了前路，更加坚定了目标。";
+    
+    
 }
 
 - (void)didReceiveMemoryWarning

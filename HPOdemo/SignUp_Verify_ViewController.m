@@ -8,19 +8,31 @@
 
 #import "SignUp_Verify_ViewController.h"
 #import "SignUp_Info_ViewController.h"
+#import "AFNetworking.h"
+#import "SVProgressHUD.h"
+#import "UserInfo.h"
 
 @interface SignUp_Verify_ViewController ()
 {
+    UILabel *telLabel;
     UITextField *verifyTextField;
     UITextField *passwordTextField;
-    UIButton    *resendButton;
+    
+    UIButton *resendButton;
 }
-
-@property (strong, nonatomic) UILabel *telLabel;
 
 @end
 
 @implementation SignUp_Verify_ViewController
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        // Custom initialization
+    }
+    return self;
+}
 
 - (void)viewDidLoad
 {
@@ -61,11 +73,11 @@
     [tipLabel3 setFont:[UIFont systemFontOfSize:16.0f]];
     [self.view addSubview:tipLabel3];
     
-    self.telLabel = [[UILabel alloc] initWithFrame:CGRectMake(16, 103, 150, 20)];
-    [self.telLabel setText:@"+86 138 888 88888"];
-    [self.telLabel setTextColor:[UIColor darkGrayColor]];
-    [self.telLabel setFont:[UIFont systemFontOfSize:15.0f]];
-    [self.view addSubview:self.telLabel];
+    telLabel = [[UILabel alloc] initWithFrame:CGRectMake(16, 103, 150, 20)];
+    [telLabel setText:self.phoneNumber];
+    [telLabel setTextColor:[UIColor darkGrayColor]];
+    [telLabel setFont:[UIFont systemFontOfSize:15.0f]];
+    [self.view addSubview:telLabel];
     
     UIView *textBGView = [[UIView alloc] initWithFrame:CGRectMake(-5, 132, 330, 88)];
     [textBGView setBackgroundColor:[UIColor whiteColor]];
@@ -94,6 +106,7 @@
     passwordTextField = [[UITextField alloc] initWithFrame:CGRectMake(55, 56, 250, 22)];
     [passwordTextField setTextColor:[UIColor darkGrayColor]];
     [passwordTextField setPlaceholder:@"设置登录用密码"];
+    [passwordTextField setSecureTextEntry:YES];
     [textBGView addSubview:passwordTextField];
     
     resendButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -108,73 +121,168 @@
     [resendButton.layer setBorderColor:[[UIColor colorWithRed:235 / 255.0f green:232 / 255.0f blue:221 / 255.0f alpha:1.0f] CGColor]];
     [resendButton addTarget:self action:@selector(resend) forControlEvents:UIControlEventTouchUpInside];
     [textBGView addSubview:resendButton];
+    
+    [self countDown];
 }
+
+- (void)setPhoneNumber:(NSString *)phoneNumber
+{
+    _phoneNumber = phoneNumber;
+    
+    [telLabel setText:phoneNumber];
+}
+
 - (void)resend
 {
-    [SVProgressHUD show];
-    [SMHPO_HTTP_Pool SMHPO_verify_code_PhoneNum:self.phoneNum withSuccess:^(id resp) {
-        int result = [[resp objectForKey:@"result"] intValue];
-        //请求成功
-        if (result == 1) {
-            [self setHashed_code:[NSString stringWithFormat:@"%@",[resp objectForKey:@"hashed_code"]]];
-            [SVProgressHUD dismiss];
-            //异常标记
-        } else {
-            [SVProgressHUD dismissWithError:[resp objectForKey:@"message"] afterDelay:1];
-        }
-    } withFailure:^(id error) {
-        [SVProgressHUD dismissWithError:error afterDelay:2];
-    }];
+    [self requestVerifyCode];
+    [self countDown];
 }
 
-- (void)next
+- (void)countDown
 {
-    self.password = passwordTextField.text;
-    SignUp_Info_ViewController *suiVC = [[SignUp_Info_ViewController alloc] init];
-    [self.navigationController pushViewController:suiVC animated:YES];
-
-    suiVC.hashed_code = self.hashed_code;
-    suiVC.phoneNum = self.phoneNum;
-    suiVC.password = self.password;
-}
-
-- (void)setHashed_code:(NSString *)hashed_code
-{
-    if (![_hashed_code isEqualToString:hashed_code]) {
-        [self testSecond];
-    }
-    _hashed_code = hashed_code;
-}
-
-- (void)testSecond
-{
-    __block int timeout=300; //倒计时时间
+    __block int timeout = 59; //倒计时时间
+    
     dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
-    dispatch_source_t _timer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0,queue);
-    dispatch_source_set_timer(_timer,dispatch_walltime(NULL, 0),1.0*NSEC_PER_SEC, 0); //每秒执行
+    dispatch_source_t _timer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, queue);
+    dispatch_source_set_timer(_timer, dispatch_walltime(NULL, 0), 1.0f * NSEC_PER_SEC, 0); //每秒执行
+    
     dispatch_source_set_event_handler(_timer, ^{
-        if(timeout<=0){ //倒计时结束，关闭
+        if (timeout <= 0) { //倒计时结束，关闭
             dispatch_source_cancel(_timer);
-        }else{
-            int minutes = timeout / 60;
+        } else {
             int seconds = timeout % 60;
-            NSString *strTime = [NSString stringWithFormat:@"%d分%.2d秒",minutes, seconds];
+            
+            NSString *strTime = [NSString stringWithFormat:@"%2d秒后重发", seconds];
+            
+            [resendButton.titleLabel setFont:[UIFont systemFontOfSize:12.0f]];
+            [resendButton setTitleColor:[UIColor darkGrayColor] forState:UIControlStateNormal];
+            [resendButton setEnabled:NO];
+            
             dispatch_async(dispatch_get_main_queue(), ^{
                 //设置界面的按钮显示 根据自己需求设置
                 [resendButton setTitle:strTime forState:UIControlStateNormal];
-                [resendButton setEnabled:NO];
             });
+            
             timeout--;
-        }  
+        }
     });
+    
     dispatch_source_set_cancel_handler(_timer, ^{
         dispatch_async(dispatch_get_main_queue(), ^{
             //设置界面的按钮显示 根据自己需求设置
             [resendButton setTitle:@"重新发送" forState:UIControlStateNormal];
+            [resendButton.titleLabel setFont:[UIFont systemFontOfSize:14.0f]];
+            [resendButton setTitleColor:HPO_GREEN forState:UIControlStateNormal];
             [resendButton setEnabled:YES];
         });
     });
+    
     dispatch_resume(_timer);
+}
+
+- (void)next
+{
+    if (verifyTextField.text.length != 6) {
+        [SVProgressHUD showErrorWithStatus:@"请检查验证码输入是否正确" duration:1.5f];
+    } else if (passwordTextField.text.length < 6) {
+        [SVProgressHUD showErrorWithStatus:@"密码长度不得小于6位" duration:1.5f];
+    } else {
+        if ([passwordTextField isFirstResponder]) {
+            [passwordTextField resignFirstResponder];
+        }
+        
+        [self requestSignUp];
+    }
+}
+
+- (void)requestVerifyCode
+{
+    [SVProgressHUD show];
+    
+    NSMutableURLRequest *urlRequest = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"http://115.28.3.92:8000/verify_code?phone=%@",self.phoneNumber]]];
+    [urlRequest addValue:@"XMLHttpRequest" forHTTPHeaderField:@"X-Requested-With"];
+    [urlRequest setTimeoutInterval:10.0f];
+    
+    AFHTTPRequestOperation *httpRequest = [[AFHTTPRequestOperation alloc] initWithRequest:urlRequest];
+    
+    [httpRequest setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
+        [SVProgressHUD dismiss];
+        
+        NSDictionary *responseDic = [NSJSONSerialization JSONObjectWithData:responseObject
+                                                                    options:NSJSONReadingAllowFragments
+                                                                      error:nil];
+        
+        int result = [[responseDic objectForKey:@"result"] intValue];
+        
+        if (result == 1) {
+            NSString *hashCode = [responseDic objectForKey:@"hashed_code"];
+            NSLog(@"hashCode = %@", hashCode);
+        } else {
+            [SVProgressHUD showErrorWithStatus:[responseDic objectForKey:@"message"] duration:1.5f];
+        }
+    }
+                                       failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                                           [SVProgressHUD dismissWithError:@"网络异常" afterDelay:2];
+                                       }];
+    
+    [httpRequest start];
+}
+
+- (void)requestSignUp
+{
+    [SVProgressHUD show];
+    
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    NSString *sessionId = [userDefaults objectForKey:@"cookie"];
+    
+    NSMutableURLRequest *urlRequest = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"http://115.28.3.92:8000/signup?password=%@&verify_code=%@", passwordTextField.text, verifyTextField.text]]];
+    
+    [urlRequest addValue:@"XMLHttpRequest" forHTTPHeaderField:@"X-Requested-With"];
+    [urlRequest addValue:sessionId forHTTPHeaderField:@"Cookie"];
+    [urlRequest setTimeoutInterval:10.0f];
+    
+    AFHTTPRequestOperation *httpRequest = [[AFHTTPRequestOperation alloc] initWithRequest:urlRequest];
+    
+    [httpRequest setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
+        [SVProgressHUD dismiss];
+        
+        NSDictionary *responseDic = [NSJSONSerialization JSONObjectWithData:responseObject
+                                                                    options:NSJSONReadingAllowFragments
+                                                                      error:nil];
+        
+        int result = [[responseDic objectForKey:@"result"] intValue];
+        
+        if (result == 1) {
+            [SVProgressHUD showSuccessWithStatus:[responseDic objectForKey:@"message"] duration:1.5f];
+            
+            [self saveUserInfo];
+            
+            SignUp_Info_ViewController *suiVC = [[SignUp_Info_ViewController alloc] init];
+            [self.navigationController pushViewController:suiVC animated:YES];
+            
+            [suiVC setPhoneNumber:self.phoneNumber];
+            [suiVC setPassword:passwordTextField.text];
+        } else {
+            [SVProgressHUD showErrorWithStatus:[responseDic objectForKey:@"message"] duration:1.5f];
+        }
+        
+    }
+                                       failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                                           [SVProgressHUD dismissWithError:@"网络异常" afterDelay:2];
+                                       }];
+    
+    [httpRequest start];
+}
+
+- (void)saveUserInfo
+{
+    UserInfo *userInfo = [[UserInfo alloc] init];
+    [userInfo setMobilephone:self.phoneNumber];
+    [userInfo setPassword:passwordTextField.text];
+    
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    [userDefaults setObject:[NSKeyedArchiver archivedDataWithRootObject:userInfo] forKey:@"userInfo"];
+    [userDefaults synchronize];
 }
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event

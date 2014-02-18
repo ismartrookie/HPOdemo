@@ -7,7 +7,6 @@
 //
 
 #import <XCTest/XCTest.h>
-#import "SMHPO_HTTP_Pool.h"
 
 @interface HPOdemoTests : XCTestCase
 
@@ -27,15 +26,9 @@
     [super tearDown];
 }
 
-//- (void)testExample
-//{
-//    XCTFail(@"No implementation for \"%s\"", __PRETTY_FUNCTION__);
-//}
-- (void)testLogin
+- (void)testExample
 {
-//    [SMHPO_HTTP_Pool SMHPO_verify_code];
-    
-    sleep(10);
+    XCTFail(@"No implementation for \"%s\"", __PRETTY_FUNCTION__);
 }
 
 @end
